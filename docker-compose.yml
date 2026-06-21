@@ -1,0 +1,23 @@
+services:
+  mariadb:
+    image: mariadb:10.11
+    container_name: biblioteca-mariadb
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: biblioteca_libros_db
+      MARIADB_USER: biblioteca_user
+      MARIADB_PASSWORD: biblioteca_pass
+    volumes:
+      - biblioteca_mariadb_data:/var/lib/mysql
+      - ./docker/mariadb/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  biblioteca_mariadb_data:
