@@ -270,65 +270,70 @@ Cuando se complete el caso pendiente, tambien es una muy buena opcion presentar:
 PrestamoServiceTest.guardarPrestamoConLibroInexistenteLanzaExcepcion
 ```
 
-## Ejecutar en macOS con Docker Compose
+## Ejecutar en macOS
 
 Requisitos:
 
 - JDK 21
-- Docker Desktop
+- Docker Desktop instalado
 - Maven Wrapper incluido en el proyecto
 
-Desde la raiz del proyecto:
+Pasos:
+
+1. Abrir Docker Desktop.
+2. Desde la raiz del proyecto, levantar MariaDB:
 
 ```bash
 docker compose up -d
 ```
 
-Esto levanta MariaDB y crea:
+Ese comando levanta MariaDB y crea automaticamente:
 
 - `biblioteca_libros_db`
 - `biblioteca_prestamos_db`
 
-Compilar:
-
-```bash
-./mvnw clean package -DskipTests
-```
-
-Levantar `libro-service`:
+3. Ejecutar `libro-service`:
 
 ```bash
 cd libro-service
 ./mvnw spring-boot:run
 ```
 
-Levantar `prestamo-service` en otra terminal:
+4. En otra terminal, ejecutar `prestamo-service`:
 
 ```bash
 cd prestamo-service
 ./mvnw spring-boot:run
 ```
 
-Orden recomendado:
+5. Abrir Swagger:
 
-1. Levantar MariaDB con Docker Compose.
-2. Levantar `libro-service`.
-3. Levantar `prestamo-service`.
-
-Verificar MariaDB:
-
-```bash
-docker compose ps
-docker exec -it biblioteca-mariadb mariadb -ubiblioteca_user -pbiblioteca_pass -e "SHOW DATABASES;"
+```text
+http://localhost:8081/swagger-ui.html
+http://localhost:8082/swagger-ui.html
 ```
 
-Detener MariaDB:
+Para ejecutar pruebas:
+
+```bash
+cd libro-service
+./mvnw test
+```
+
+Y en el otro microservicio:
+
+```bash
+cd prestamo-service
+./mvnw test
+```
+
+Para cerrar MariaDB:
 
 ```bash
 docker compose down
 ```
 
-Detener MariaDB y borrar volumen:
+Si se quiere borrar tambien el volumen de datos:
 
 ```bash
 docker compose down -v
@@ -336,23 +341,21 @@ docker compose down -v
 
 ## Ejecutar en Windows con Laragon
 
-Laragon incluye MariaDB/MySQL y permite levantar la base local sin Docker.
+En Windows se puede usar Laragon como alternativa a Docker para levantar MariaDB local.
 
 Requisitos:
 
 - JDK 21
 - Laragon instalado
 - Maven Wrapper incluido en el proyecto
-- Puerto `3306` disponible
 
 Pasos:
 
 1. Abrir Laragon.
-2. Iniciar el servicio de base de datos.
-3. Abrir HeidiSQL, phpMyAdmin o la terminal MariaDB de Laragon.
-4. Crear las bases y usuario de los microservicios.
+2. Iniciar MariaDB/MySQL.
+3. Crear las bases necesarias.
 
-SQL recomendado para Laragon:
+SQL minimo:
 
 ```sql
 CREATE DATABASE IF NOT EXISTS biblioteca_libros_db
@@ -366,41 +369,44 @@ CREATE DATABASE IF NOT EXISTS biblioteca_prestamos_db
 CREATE DATABASE IF NOT EXISTS prestamolibros_db
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
-
-CREATE USER IF NOT EXISTS 'biblioteca_user'@'localhost'
-    IDENTIFIED BY 'biblioteca_pass';
-
-GRANT ALL PRIVILEGES ON biblioteca_libros_db.* TO 'biblioteca_user'@'localhost';
-GRANT ALL PRIVILEGES ON biblioteca_prestamos_db.* TO 'biblioteca_user'@'localhost';
-
-FLUSH PRIVILEGES;
 ```
 
-Si Laragon no permite crear usuario con esa instruccion, usar el usuario `root` de Laragon y ajustar temporalmente en los `application.properties` de los microservicios:
+Si se usa Laragon con usuario `root` y password vacia, ajustar temporalmente en `application.properties` de cada microservicio:
 
 ```properties
 spring.datasource.username=root
 spring.datasource.password=
 ```
 
-Luego ejecutar en Windows:
-
-```bat
-mvnw.cmd clean package -DskipTests
-```
-
-Levantar `libro-service`:
+Luego ejecutar cada servicio:
 
 ```bat
 cd libro-service
-..\mvnw.cmd spring-boot:run
+mvnw.cmd spring-boot:run
 ```
-
-Levantar `prestamo-service` en otra terminal:
 
 ```bat
 cd prestamo-service
-..\mvnw.cmd spring-boot:run
+mvnw.cmd spring-boot:run
+```
+
+Swagger queda disponible en:
+
+```text
+http://localhost:8081/swagger-ui.html
+http://localhost:8082/swagger-ui.html
+```
+
+Para pruebas:
+
+```bat
+cd libro-service
+mvnw.cmd test
+```
+
+```bat
+cd prestamo-service
+mvnw.cmd test
 ```
 
 ## Ejecutar el monolito
